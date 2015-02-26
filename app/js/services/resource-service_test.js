@@ -1,4 +1,4 @@
-describe('ResourceService', function() {
+xdescribe('ResourceService', function() {
   var that = this;
 
   beforeEach(angular.mock.module('SampleApp'));

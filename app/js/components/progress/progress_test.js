@@ -1,4 +1,4 @@
-describe('component', function() {
+xdescribe('component', function() {
   var that = this;
 
   beforeEach(angular.mock.module('SampleApp'));

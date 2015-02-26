@@ -14,11 +14,8 @@ var app = angular.module('SampleApp', ['ngRoute', 'ngAnimate', 'ngMessages']);
 app.controller('PageController', require('./pages/page/page-controller.js'));
 
 // components (controllers exposed for testing)
-app.directive('component', require('./components/component/component'));
-app.controller('ComponentController', require('./components/component/component-controller.js'));
-
-// resources
-app.factory('ResourceService', require('./services/resource-service'));
+app.directive('progress', require('./components/progress/progress'));
+app.controller('ProgressController', require('./components/progress/progress-controller.js'));
 
 // custom validators
 app.directive('match', require('./validators/match'));

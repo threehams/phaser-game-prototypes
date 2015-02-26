@@ -4,7 +4,7 @@ module.exports = function() {
     scope: {
       auth: '='
     },
-    template: require('./component-template.jade'),
-    controller: require('./component-controller')
+    template: require('./progress-template.jade'),
+    controller: require('./progress-controller')
   }
 };

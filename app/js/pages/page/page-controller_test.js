@@ -1,6 +1,6 @@
 'use strict';
 
-describe('PageController', function() {
+xdescribe('PageController', function() {
   var that = this;
 
   beforeEach(angular.mock.module('SampleApp'));

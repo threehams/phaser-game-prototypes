@@ -89,7 +89,7 @@ gulp.task('karma', function() {
 });
 
 gulp.task('default', function() {
-  runSequence('clean', 'build', 'karma');
+  runSequence('build', 'karma');
 });
 
 gulp.task('build',
