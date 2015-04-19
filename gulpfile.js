@@ -126,7 +126,12 @@ gulp.task('watch', function () {
   }
 });
 gulp.task('process-static-files', function () {
-  runSequence(['copy-static-files', 'process-png']);
+  runSequence(['copy-static-files', 'process-png', 'copy-modules']);
+});
+
+gulp.task('copy-modules', function() {
+  return gulp.src(['./node_modules/phaser/dist/phaser.min.js', './node_modules/phaser/dist/phaser.map'])
+    .pipe(gulp.dest('dist/vendor/'));
 });
 
 gulp.task('copy-static-files', function() {

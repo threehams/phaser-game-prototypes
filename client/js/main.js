@@ -3,15 +3,16 @@
 require('angular');
 require('angular-route');
 require('angular-animate');
-require('angular-bootstrap');
 require('angular-messages');
+//require('phaser');
 global._ = require('lodash');
 global.moment = require('moment');
 
 var app = angular.module('SampleApp', ['ngRoute', 'ngAnimate', 'ngMessages']);
 
 // pages
-app.controller('PageController', require('./pages/page/page-controller.js'));
+app.controller('HomeController', require('./pages/home/home-controller.js'));
+app.controller('MemoryController', require('./pages/memory/memory-controller.js'));
 
 // components (controllers exposed for testing)
 app.directive('component', require('./components/component/component'));
@@ -31,8 +32,13 @@ app.config([
 
     $routeProvider
       .when('/', {
-        template: require('./pages/page/page-template.jade'),
-        controller: 'PageController',
+        template: require('./pages/home/home-template.jade'),
+        controller: 'HomeController',
+        controllerAs: 'vm'
+      })
+      .when('/memory', {
+        template: require('./pages/memory/memory-template.jade'),
+        controller: 'MemoryController',
         controllerAs: 'vm'
       })
       .otherwise({

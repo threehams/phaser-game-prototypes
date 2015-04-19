@@ -7,6 +7,7 @@ var serve = require('koa-static');
 var router = require('koa-router')();
 
 var app = module.exports = koa();
+var fs = Promise.promisifyAll(require('fs'));
 
 app.use(function *handleErrors(next) {
   try {
@@ -18,7 +19,8 @@ app.use(function *handleErrors(next) {
   }
 });
 
-app.use(serve('dist', {defer: true}));
+app.use(serve('dist'));
+
 //app.use(function *logRequest(next) {
 //  var start = new Date();
 //  yield next;
@@ -28,6 +30,8 @@ app.use(serve('dist', {defer: true}));
 
 require('./routes/resources-routes')(router);
 
-app.use(router.routes());
-app.use(router.allowedMethods());
+app.use(function *() {
+  this.body = (yield fs.readFileAsync('./dist/index.html')).toString();
+});
+//app.use(router.allowedMethods());
 
