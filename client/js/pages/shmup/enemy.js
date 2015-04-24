@@ -7,8 +7,8 @@ var DRAG = 400;
 
 var Weapon = require('./weapon');
 
-var Enemy = function(game, x, y, key, frame, bullets, player) {
-  Phaser.Sprite.call(this, game, x, y, key, frame, bullets, player);
+var Enemy = function(game, x, y, key, frame, bullets, player, audio) {
+  Phaser.Sprite.call(this, game, x, y, key, frame);
 
   this.maxHealth = 100;
 
@@ -33,7 +33,7 @@ var Enemy = function(game, x, y, key, frame, bullets, player) {
   this.killDelay = 50;
 
   this.player = player;
-  this.weapon = new Weapon(this.game, bullets, {minFireRate: 1000, maxFireRate: 2000, bulletSpeed: 150, bulletDamage: 10});
+  this.weapon = new Weapon(this.game, bullets, {minFireRate: 1000, maxFireRate: 2000, bulletSpeed: 150, bulletDamage: 10, audio: audio});
 
   this.exists = false;
 };

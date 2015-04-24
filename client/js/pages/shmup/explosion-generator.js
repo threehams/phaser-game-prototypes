@@ -2,11 +2,12 @@
 
 var Explosion = require('./explosion');
 
-var ExplosionGenerator = function(game) {
+var ExplosionGenerator = function(game, audio) {
   Phaser.Group.call(this, game);
 
   this.classType = Explosion;
   this.createMultiple(128, 'sprites');
+  this.setAll('audio', audio, null, null, null, true);
 
   this.explosionSizes = ['tiny', 'small', 'normal'];
 };

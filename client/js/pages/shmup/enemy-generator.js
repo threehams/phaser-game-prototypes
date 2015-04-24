@@ -2,7 +2,7 @@
 
 var Enemy = require('./enemy');
 
-var EnemyGenerator = function(game, bullets, player) {
+var EnemyGenerator = function(game, bullets, player, audio) {
   Phaser.Group.call(this, game);
 
   var that = this;
@@ -12,7 +12,7 @@ var EnemyGenerator = function(game, bullets, player) {
 
   this.nextSpawn = this.game.time.time + 1000;
   _.times(12, function() {
-    that.add(new Enemy(that.game, 0, 0, 'sprites', 'enemies/jet1/0000', bullets, player));
+    that.add(new Enemy(that.game, 0, 0, 'sprites', 'enemies/jet1/0000', bullets, player, audio));
   });
 };
 

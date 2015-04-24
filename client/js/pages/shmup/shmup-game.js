@@ -13,13 +13,31 @@ Game.prototype = {
     this.load.image('background', 'img/shmup-background.png');
     this.load.image('pressStart', 'img/press-start.png');
     this.load.atlasJSONHash('sprites', 'img/shmup-sprites.png', 'assets/shmup-sprites.json');
-    //this.load.spritesheet('projectiles', 'img/shmup-projectiles.png', 12, 14);
+    this.game.load.audio('music', 'assets/tyrian-the-level.mp3');
+    this.game.load.audio('explosionTiny', 'assets/explosion-tiny.mp3');
+    this.game.load.audio('explosionSmall', 'assets/explosion-small.mp3');
+    this.game.load.audio('explosionNormal', 'assets/explosion-normal.mp3');
+    this.game.load.audio('explosionLarge', 'assets/explosion-large.mp3');
+    this.game.load.audio('firePulse', 'assets/fire-pulse.mp3');
+    this.game.load.audio('fireSmall', 'assets/fire-small.mp3');
+    this.game.load.audio('fireVulcan', 'assets/fire-vulcan.mp3');
   },
 
   create: function () {
     var that = this;
 
     this.padding = 36;
+
+    this.music = this.game.add.audio('music');
+    this.audio = {
+      firePulse: this.game.add.audio('firePulse'),
+      fireSmall: this.game.add.audio('fireSmall'),
+      explosions: {
+        tiny: this.game.add.audio('explosionTiny'),
+        small: this.game.add.audio('explosionSmall'),
+        normal: this.game.add.audio('explosionLarge')
+      }
+    };
 
     this.background = this.game.add.tileSprite(0, 0, 400, 600, 'background');
     this.background.texture.baseTexture.scaleMode = PIXI.scaleModes.NEAREST;
@@ -39,10 +57,10 @@ Game.prototype = {
     });
 
     this.createPlayer();
-    this.weapon = new Weapon(this.game, this.playerBullets, {fireRate: 120, bulletSpeed: 400, bulletDamage: 50});
+    this.weapon = new Weapon(this.game, this.playerBullets, {fireRate: 120, bulletSpeed: 400, bulletDamage: 50, audio: this.audio.firePulse});
     this.game.add.existing(this.weapon);
 
-    this.enemies = new EnemyGenerator(this.game, this.enemyBullets, this.player);
+    this.enemies = new EnemyGenerator(this.game, this.enemyBullets, this.player, this.audio.fireSmall);
 
     this.fireButton = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
@@ -55,10 +73,16 @@ Game.prototype = {
     this.game.add.image(260, 20, this.pointsText);
     this.updatePoints();
 
-    this.explosions = new ExplosionGenerator(this.game);
+    this.explosions = new ExplosionGenerator(this.game, this.audio.explosions);
+
+    this.game.sound.setDecodedCallback([this.music], this.playMusic, this);
   },
 
-  createPlayer: function () {
+  playMusic: function() {
+    this.music.play(null, null, 0.5);
+  },
+
+  createPlayer: function() {
     this.player = new Player(this.game, 200, this.world.height - this.padding, 'sprites');
     this.game.add.existing(this.player);
   },

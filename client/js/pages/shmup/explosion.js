@@ -28,6 +28,7 @@ Explosion.prototype.spawn = function(x, y, vector, size) {
   this.ySpeed = vector[1];
 
   this.play(size, null, false, true);
+  this.audio[size].play();
 };
 
 Explosion.prototype.update = function() {

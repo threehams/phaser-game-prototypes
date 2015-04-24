@@ -13,6 +13,8 @@ var Weapon = function(game, bullets, opts) {
 
   this.bullets = bullets;
 
+  this.audio = opts.audio;
+
   this.pattern = opts.pattern; // [0, 4, 8, 12, 8, 4, 0, -4, -8, -12, -8, -4];
   this.patternIndex = 0;
 };
@@ -45,6 +47,8 @@ Weapon.prototype.fire = function(source, target) {
     this.bulletSpeed,
     this.bulletDamage
   );
+  this.audio.play();
+
   var fireRate = this.fireRate ? this.fireRate : _.random(this.minFireRate, this.maxFireRate);
   this.nextFire = this.game.time.time + fireRate;
 };
