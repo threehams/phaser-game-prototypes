@@ -74,11 +74,13 @@ Game.prototype = {
     this.game.add.existing(this.player);
     currentPlayer.position = this.player.position;
 
-    var weapon = new Weapon(this.game, this.playerBullets, this.weaponsData.vulcanSingle);
+    var weapon = new Weapon(this.game, this.playerBullets, this.weaponsData.multi);
     this.game.add.existing(weapon);
     this.player.addWeapon(weapon);
 
-    this.enemies = new EnemyGenerator(this.game, this.enemyGroupsData.popcorn, this.enemyBullets);
+    this.enemyGroups = _.map(this.enemyGroupsData, function(group) {
+      return new EnemyGenerator(that.game, group, that.enemyBullets);
+    });
 
     this.fireButton = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
@@ -91,6 +93,7 @@ Game.prototype = {
     this.game.add.image(260, 20, this.pointsText);
     this.updatePoints();
 
+    //console.log('game');
     this.explosions = new ExplosionGenerator(this.game, this.audio.explosions);
 
     this.game.sound.setDecodedCallback([this.music], this.playMusic, this);
@@ -102,7 +105,7 @@ Game.prototype = {
   },
 
   spawnGroup: function() {
-    this.enemies.spawn();
+    _.sample(this.enemyGroups).spawn();
   },
 
   playMusic: function() {
@@ -111,6 +114,7 @@ Game.prototype = {
 
   update: function() {
     if (this.won || this.lost) return;
+    var that = this;
 
     this.player.stop();
 
@@ -122,8 +126,8 @@ Game.prototype = {
     }
     if (this.player.y > this.world.height - this.padding) {
       this.player.y = this.world.height - this.padding;
-    } else if (this.player.y < 400) {
-      this.player.y = 400;
+    } else if (this.player.y < this.padding) {
+      this.player.y = this.padding;
     }
     // move player if key pressed
     if (this.cursors.left.isDown) {
@@ -143,14 +147,17 @@ Game.prototype = {
     }
 
     // cover overlap of player, enemies, bullets
-    this.game.physics.arcade.overlap(this.player, this.enemies, this.enemyCollide, null, this);
-    this.game.physics.arcade.overlap(this.playerBullets, this.enemies, this.enemyHit, null, this);
     this.game.physics.arcade.overlap(this.player, this.enemyBullets, this.playerHit, null, this);
+
+    _.forEach(this.enemyGroups, function(group) {
+      that.game.physics.arcade.overlap(that.player, group, that.enemyCollide, null, that);
+      that.game.physics.arcade.overlap(that.playerBullets, group, that.enemyHit, null, that);
+    })
   },
 
   enemyCollide: function(player, enemy) {
     enemy.kill();
-    this.explosions.spawn(enemy);
+    //this.explosions.spawn(enemy);
     player.damageShields(enemy.collideDamage);
     this.updateShields(player.shields);
 
@@ -164,10 +171,14 @@ Game.prototype = {
     bullet.kill();
 
     if (!enemy.alive) {
-      this.explosions.spawn(enemy);
+      //this.explosions.spawn(enemy);
       this.points += enemy.pointsValue;
       this.updatePoints();
     }
+  },
+
+  spawnExplosion: function(source, number) {
+    this.explosions.spawn(enemy, number);
   },
 
   playerHit: function(player, bullet) {

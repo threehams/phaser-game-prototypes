@@ -23,16 +23,21 @@ var Weapon = function(game, bullets, weaponOpts) {
       burstCount: opts.burstCount,
       burstIndex: 0,
 
+      randomOffset: opts.randomOffset,
+      randomAngle: opts.randomAngle,
+
       bullets: bullets,
 
       audio: opts.audio,
 
-      pattern: opts.pattern, // [0, 4, 8, 12, 8, 4, 0, -4, -8, -12, -8, -4]
+      offsetPattern: opts.offsetPattern, // [0, 4, 8, 12, 8, 4, 0, -4, -8, -12, -8, -4]
       patternIndex: 0,
 
       bulletCount: opts.bulletCount || 1,
       spreadOffset: opts.spreadOffset || 0,
-      spreadAngle: opts.spreadAngle || 0
+      spreadAngle: opts.spreadAngle || 0,
+
+      frameName: opts.frameName
     }
   });
 };
@@ -43,8 +48,9 @@ var Weapon = function(game, bullets, weaponOpts) {
 Weapon.parse = function(data) {
   var parsed = JSON.parse(data);
   // iterate through combination weapons and point them to the base weapon reference
-  _.forEach(parsed.combination, function(weaponList, weaponName) {
-    parsed.combination[weaponName] = _.map(weaponList, function(weaponString) {
+  _.forEach(parsed, function(weaponList, weaponName) {
+    if (Array.isArray(weaponList))
+    parsed[weaponName] = _.map(weaponList, function(weaponString) {
       return parsed[weaponString];
     });
   });
@@ -70,13 +76,13 @@ Weapon.prototype.firePart = function(part, source, target, angle) {
   if (target) angle = this.game.physics.arcade.angleBetween(source, target) * (180 / Math.PI);
 
   var xOffset = 0;
-  if (part.pattern) {
-    if (part.patternIndex === part.pattern.length - 1) {
+  if (part.offsetPattern) {
+    if (part.patternIndex === part.offsetPattern.length - 1) {
       part.patternIndex = 0;
     } else {
       part.patternIndex++;
     }
-    xOffset = part.pattern[part.patternIndex];
+    xOffset = part.offsetPattern[part.patternIndex];
   }
 
   _.times(part.bulletCount, function(i) {
@@ -98,10 +104,14 @@ Weapon.prototype.firePart = function(part, source, target, angle) {
       }
     }
 
-    var bulletAngle = angle + part.spreadAngle * multiplier;
+    var bulletAngle = (angle + part.spreadAngle * multiplier);
     var bulletXOffset = xOffset + (multiplier * part.spreadOffset);
 
+    if (part.randomOffset) bulletXOffset += _.random(-part.randomOffset, part.randomOffset);
+    if (part.randomAngle) bulletAngle += _.random(-part.randomAngle, part.randomAngle);
+
     var bullet = part.bullets.getFirstExists(false);
+    bullet.frameName = part.frameName;
     bullet.fire(
       source.x + bulletXOffset,
       source.y + source.weaponOffsetX,

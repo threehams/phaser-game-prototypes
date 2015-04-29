@@ -2,7 +2,7 @@
   "sine": {
     "steps": [
       {
-        "delay": 500,
+        "delay": 0,
         "method": "turnLeft"
       },
       {
@@ -30,7 +30,7 @@
         "method": "startFiring"
       },
       {
-        "delay": 300,
+        "delay": 2000,
         "method": "turnLeft"
       }
     ]
@@ -39,6 +39,18 @@
     "steps": [
       {
         "delay": 600,
+        "method": "startFiring"
+      }
+    ]
+  },
+  "hangAround": {
+    "steps": [
+      {
+        "delay": 1000,
+        "method": "matchScroll"
+      },
+      {
+        "delay": 2000,
         "method": "startFiring"
       }
     ]

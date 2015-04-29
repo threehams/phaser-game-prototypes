@@ -3,7 +3,28 @@
     "position": "center",
     "randomOffset": 100,
     "spawnCount": 2,
-    "spawnDelay": 2000,
+    "spawnDelay": 800,
     "enemy": "jet2"
+  },
+  "forward": {
+    "position": "center",
+    "positionOffset": -150,
+    "spawnCount": 5,
+    "spawnDelay": 100,
+    "spawnOffset": 50,
+    "enemy": "jet3"
+  },
+  "sine": {
+    "position": "center",
+    "spawnCount": 4,
+    "spawnDelay": 200,
+    "enemy": "jet1"
+  },
+  "large": {
+    "position": "center",
+    "spawnCount": 1,
+    "spawnDelay": 0,
+    "enemy": "large",
+    "randomOffset": 100
   }
 }

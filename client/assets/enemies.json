@@ -1,9 +1,9 @@
 {
   "jet1": {
     "velocity": 300,
-    "acceleration": 800,
-    "maxVelocityX": 600,
-    "maxVelocityY": 200,
+    "acceleration": 400,
+    "maxVelocityX": 400,
+    "maxVelocityY": 150,
     "drag": 400,
     "frames": {
       "left": "enemies/jet1/0000",
@@ -11,23 +11,27 @@
       "right": "enemies/jet1/0002"
     },
     "ai": "sine",
-    "maxHealth": 100,
+    "maxHealth": 50,
     "pointsValue": 100,
     "collideDamage": 25,
     "target": "player",
     "weapon": {
       "bulletCount": 1,
-      "burstRate": 50,
-      "burstCount": 5,
+      "burstRate": 100,
+      "burstCount": 10,
+      "randomOffset": 5,
+      "randomAngle": 15,
       "fireRate": 1500,
-      "bulletSpeed": 400,
-      "bulletDamage": 10
-    }
+      "bulletSpeed": 200,
+      "bulletDamage": 10,
+      "frameName": "projectiles/enemy/0000"
+    },
+    "weaponOffsetX": 28
   },
   "jet2": {
     "velocity": 200,
-    "acceleration": 600,
-    "maxVelocityX": 400,
+    "acceleration": 150,
+    "maxVelocityX": 200,
     "maxVelocityY": 100,
     "drag": 400,
     "frames": {
@@ -46,8 +50,10 @@
       "burstCount": 10,
       "fireRate": 1000,
       "bulletSpeed": 400,
-      "bulletDamage": 10
-    }
+      "bulletDamage": 10,
+      "frameName": "projectiles/enemy/0000"
+    },
+    "weaponOffsetX": 28
   },
   "jet3": {
     "velocity": 400,
@@ -69,7 +75,27 @@
       "bulletCount": 1,
       "fireRate": 1000,
       "bulletSpeed": 300,
-      "bulletDamage": 10
-    }
+      "bulletDamage": 10,
+      "frameName": "projectiles/enemy/0000"
+    },
+    "weaponOffsetX": 28
+  },
+  "large": {
+    "velocity": 400,
+    "acceleration": 400,
+    "maxVelocityX": 200,
+    "maxVelocityY": 150,
+    "drag": 400,
+    "frames": {
+      "center": "enemies/large1"
+    },
+    "ai": "hangAround",
+    "maxHealth": 2000,
+    "pointsValue": 1000,
+    "collideDamage": 10,
+    "weapon": "largeEnemyWeapon",
+    "hitboxX": 96,
+    "hitboxY": 56,
+    "weaponOffsetX": 64
   }
 }
