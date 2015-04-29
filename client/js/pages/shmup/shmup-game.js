@@ -109,7 +109,7 @@ Game.prototype = {
   },
 
   playMusic: function() {
-    //this.music.play(null, null, 0.5);
+    this.music.play(null, null, 0.5);
   },
 
   update: function() {
