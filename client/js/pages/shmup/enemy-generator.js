@@ -1,35 +1,52 @@
 'use strict';
 
 var Enemy = require('./enemy');
+var Weapon = require('./weapon');
+var AI = require('./ai');
 
-var EnemyGenerator = function(game, bullets, player, audio) {
+var EnemyGenerator = function(game, spawnOpts, bullets) {
   Phaser.Group.call(this, game);
 
   var that = this;
 
-  this.spawnRateMin = 2000;
-  this.spawnRateMax = 6000;
+  if (spawnOpts.position === 'center') this.spawnPosition = this.game.world.centerX;
+  this.randomOffset = spawnOpts.randomOffset;
+  this.spawnCount = spawnOpts.spawnCount;
+  this.spawnDelay = spawnOpts.spawnDelay;
 
-  this.nextSpawn = this.game.time.time + 1000;
   _.times(12, function() {
-    that.add(new Enemy(that.game, 0, 0, 'sprites', 'enemies/jet1/0000', bullets, player, audio));
+    var weapon = new Weapon(that.game, bullets, spawnOpts.enemy.weapon);
+    var ai = new AI(spawnOpts.enemy.ai);
+    that.add(new Enemy(that.game, 0, 0, 'sprites', _.merge({ai: ai, weapon: weapon}, _.omit(spawnOpts.enemy, 'weapon', 'ai'))));
   });
 };
 
 EnemyGenerator.prototype = Object.create(Phaser.Group.prototype);
 EnemyGenerator.prototype.constructor = EnemyGenerator;
 
-EnemyGenerator.prototype.spawn = function() {
-  if (this.game.time.time < this.nextSpawn) return;
+EnemyGenerator.parse = function(enemyGroupsData, enemiesData) {
+  var parsed = JSON.parse(enemyGroupsData);
+  _.forEach(parsed, function(group) {
+    if (typeof group.enemy === 'string') group.enemy = enemiesData[group.enemy];
+  });
+  return Object.freeze(parsed);
+};
 
-  var direction = _.random(-1, 1);
-  var center = this.game.world.centerX;
-  var position = _.random(center - 200, center + 200);
-  this.game.time.events.repeat(300, 4, function() {
-    this.getFirstExists(false).spawn(position, direction);
+EnemyGenerator.prototype.spawn = function() {
+  var position = _.random(this.spawnPosition - this.randomOffset, this.spawnPosition + this.randomOffset);
+  this.game.time.events.repeat(this.spawnDelay, this.spawnCount, function() {
+    this.getFirstExists(false).spawn(position);
   }, this);
 
-  this.nextSpawn = this.game.time.time + _.random(this.spawnRateMin, this.spawnRateMax);
+  //var i = -2;
+  //var center = this.game.world.centerX;
+  //var position;
+  //this.game.time.events.repeat(100, 6, function() {
+  //  position = center + (i * 50);
+  //  i++;
+  //  console.log(position);
+  //  this.getFirstExists(false).spawn(position);
+  //}, this);
 };
 
 module.exports = EnemyGenerator;

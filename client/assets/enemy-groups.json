@@ -1,0 +1,9 @@
+{
+  "popcorn": {
+    "position": "center",
+    "randomOffset": 100,
+    "spawnCount": 2,
+    "spawnDelay": 2000,
+    "enemy": "jet2"
+  }
+}

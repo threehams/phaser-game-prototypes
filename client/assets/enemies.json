@@ -1,0 +1,75 @@
+{
+  "jet1": {
+    "velocity": 300,
+    "acceleration": 800,
+    "maxVelocityX": 600,
+    "maxVelocityY": 200,
+    "drag": 400,
+    "frames": {
+      "left": "enemies/jet1/0000",
+      "center": "enemies/jet1/0001",
+      "right": "enemies/jet1/0002"
+    },
+    "ai": "sine",
+    "maxHealth": 100,
+    "pointsValue": 100,
+    "collideDamage": 25,
+    "target": "player",
+    "weapon": {
+      "bulletCount": 1,
+      "burstRate": 50,
+      "burstCount": 5,
+      "fireRate": 1500,
+      "bulletSpeed": 400,
+      "bulletDamage": 10
+    }
+  },
+  "jet2": {
+    "velocity": 200,
+    "acceleration": 600,
+    "maxVelocityX": 400,
+    "maxVelocityY": 100,
+    "drag": 400,
+    "frames": {
+      "left": "enemies/jet2/0000",
+      "center": "enemies/jet2/0001",
+      "right": "enemies/jet2/0002"
+    },
+    "ai": "fireAndTurnLeft",
+    "maxHealth": 100,
+    "pointsValue": 100,
+    "collideDamage": 25,
+    "weapon": {
+      "bulletCount": 4,
+      "spreadAngle": 25,
+      "burstRate": 50,
+      "burstCount": 10,
+      "fireRate": 1000,
+      "bulletSpeed": 400,
+      "bulletDamage": 10
+    }
+  },
+  "jet3": {
+    "velocity": 400,
+    "acceleration": 400,
+    "maxVelocityX": 200,
+    "maxVelocityY": 150,
+    "drag": 400,
+    "frames": {
+      "left": "enemies/jet3/0000",
+      "center": "enemies/jet3/0001",
+      "right": "enemies/jet3/0002"
+    },
+    "ai": "fireForward",
+    "maxHealth": 10,
+    "pointsValue": 100,
+    "collideDamage": 25,
+    "target": "player",
+    "weapon": {
+      "bulletCount": 1,
+      "fireRate": 1000,
+      "bulletSpeed": 300,
+      "bulletDamage": 10
+    }
+  }
+}

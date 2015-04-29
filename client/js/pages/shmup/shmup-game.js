@@ -1,10 +1,13 @@
 'use strict';
 
 var Player = require('./player');
-var Weapon = require('./weapon');
 var Bullet = require('./bullet');
 var EnemyGenerator = require('./enemy-generator');
 var ExplosionGenerator = require('./explosion-generator');
+var Weapon = require('./weapon');
+var Enemy = require('./enemy');
+var AI = require('./ai');
+var currentPlayer = require('./current-player');
 
 function Game() {}
 
@@ -21,23 +24,34 @@ Game.prototype = {
     this.game.load.audio('firePulse', 'assets/fire-pulse.mp3');
     this.game.load.audio('fireSmall', 'assets/fire-small.mp3');
     this.game.load.audio('fireVulcan', 'assets/fire-vulcan.mp3');
+    this.game.load.text('weaponsData', 'assets/weapons.json');
+    this.game.load.text('enemiesData', 'assets/enemies.json');
+    this.game.load.text('aiData', 'assets/ai.json');
+    this.game.load.text('enemyGroupsData', 'assets/enemy-groups.json');
   },
 
   create: function () {
     var that = this;
 
+    this.weaponsData = Weapon.parse(this.cache.getText('weaponsData'));
+    this.aiData = AI.parse(this.cache.getText('aiData'));
+    this.enemiesData = Enemy.parse(this.cache.getText('enemiesData'), this.aiData, this.weaponsData);
+    this.enemyGroupsData = EnemyGenerator.parse(this.cache.getText('enemyGroupsData'), this.enemiesData);
+
     this.padding = 36;
 
     this.music = this.game.add.audio('music');
+    this.game.add.audio('firePulse');
+    this.game.add.audio('fireSmall');
     this.audio = {
-      firePulse: this.game.add.audio('firePulse'),
-      fireSmall: this.game.add.audio('fireSmall'),
       explosions: {
         tiny: this.game.add.audio('explosionTiny'),
         small: this.game.add.audio('explosionSmall'),
         normal: this.game.add.audio('explosionLarge')
       }
     };
+
+    //this.game.sound.mute = true;
 
     this.background = this.game.add.tileSprite(0, 0, 400, 600, 'background');
     this.background.texture.baseTexture.scaleMode = PIXI.scaleModes.NEAREST;
@@ -46,21 +60,25 @@ Game.prototype = {
 
     this.cursors = this.game.input.keyboard.createCursorKeys();
 
-    this.playerBullets = this.game.add.group();
-    this.enemyBullets = this.game.add.group();
+    this.playerBullets = new Phaser.Group(this.game, null);
+    this.enemyBullets = new Phaser.Group(this.game, null);
 
-    _.times(64, function() {
+    _.times(128, function() {
       that.playerBullets.add(new Bullet(that.game, 0, 0, 'sprites', 'projectiles/pulse1'), true);
     });
-    _.times(64).map(function() {
+    _.times(512).map(function() {
       that.enemyBullets.add(new Bullet(that.game, 0, 0, 'sprites', 'projectiles/enemy/0000'), true);
     });
 
-    this.createPlayer();
-    this.weapon = new Weapon(this.game, this.playerBullets, {fireRate: 120, bulletSpeed: 400, bulletDamage: 50, audio: this.audio.firePulse});
-    this.game.add.existing(this.weapon);
+    this.player = new Player(this.game, 200, this.world.height - this.padding, 'sprites', null);
+    this.game.add.existing(this.player);
+    currentPlayer.position = this.player.position;
 
-    this.enemies = new EnemyGenerator(this.game, this.enemyBullets, this.player, this.audio.fireSmall);
+    var weapon = new Weapon(this.game, this.playerBullets, this.weaponsData.vulcanSingle);
+    this.game.add.existing(weapon);
+    this.player.addWeapon(weapon);
+
+    this.enemies = new EnemyGenerator(this.game, this.enemyGroupsData.popcorn, this.enemyBullets);
 
     this.fireButton = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
@@ -76,38 +94,55 @@ Game.prototype = {
     this.explosions = new ExplosionGenerator(this.game, this.audio.explosions);
 
     this.game.sound.setDecodedCallback([this.music], this.playMusic, this);
+
+    this.game.add.existing(this.playerBullets);
+    this.game.add.existing(this.enemyBullets);
+
+    this.game.time.events.loop(2000, this.spawnGroup, this);
+  },
+
+  spawnGroup: function() {
+    this.enemies.spawn();
   },
 
   playMusic: function() {
-    this.music.play(null, null, 0.5);
-  },
-
-  createPlayer: function() {
-    this.player = new Player(this.game, 200, this.world.height - this.padding, 'sprites');
-    this.game.add.existing(this.player);
+    //this.music.play(null, null, 0.5);
   },
 
   update: function() {
     if (this.won || this.lost) return;
 
-    this.enemies.spawn();
     this.player.stop();
+
+    // force player back in bounds
     if (this.player.x < this.padding) {
       this.player.x = this.padding;
     } else if (this.player.x > this.world.width - this.padding) {
       this.player.x = this.world.width - this.padding;
     }
-
+    if (this.player.y > this.world.height - this.padding) {
+      this.player.y = this.world.height - this.padding;
+    } else if (this.player.y < 400) {
+      this.player.y = 400;
+    }
+    // move player if key pressed
     if (this.cursors.left.isDown) {
       this.player.moveLeft();
     } else if (this.cursors.right.isDown) {
       this.player.moveRight();
     }
-
-    if (this.fireButton.isDown) {
-      this.weapon.fire(this.player);
+    if (this.cursors.up.isDown) {
+      this.player.moveUp();
+    } else if (this.cursors.down.isDown) {
+      this.player.moveDown();
     }
 
+    // fire player weapon if key pressed
+    if (this.fireButton.isDown) {
+      this.player.fireWeapon();
+    }
+
+    // cover overlap of player, enemies, bullets
     this.game.physics.arcade.overlap(this.player, this.enemies, this.enemyCollide, null, this);
     this.game.physics.arcade.overlap(this.playerBullets, this.enemies, this.enemyHit, null, this);
     this.game.physics.arcade.overlap(this.player, this.enemyBullets, this.playerHit, null, this);
@@ -136,8 +171,10 @@ Game.prototype = {
   },
 
   playerHit: function(player, bullet) {
-    player.damageShields(bullet.damageDealt);
     bullet.kill();
+    if (player.shieldsGone()) return;
+
+    player.damageShields(bullet.damageDealt);
 
     this.updateShields(player.shields);
     if (player.shieldsGone()) {

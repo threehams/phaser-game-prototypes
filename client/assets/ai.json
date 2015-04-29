@@ -1,0 +1,46 @@
+{
+  "sine": {
+    "steps": [
+      {
+        "delay": 500,
+        "method": "turnLeft"
+      },
+      {
+        "delay": 100,
+        "method": "startFiring"
+      },
+      {
+        "delay": 400,
+        "method": "turnRight"
+      },
+      {
+        "delay": 1000,
+        "method": "turnLeft"
+      },
+      {
+        "delay": 1000,
+        "method": "turnRight"
+      }
+    ]
+  },
+  "fireAndTurnLeft": {
+    "steps": [
+      {
+        "delay": 600,
+        "method": "startFiring"
+      },
+      {
+        "delay": 300,
+        "method": "turnLeft"
+      }
+    ]
+  },
+  "fireForward": {
+    "steps": [
+      {
+        "delay": 600,
+        "method": "startFiring"
+      }
+    ]
+  }
+}

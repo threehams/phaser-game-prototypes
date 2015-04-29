@@ -1,55 +1,58 @@
 'use strict';
 
-var MAX_VELOCITY_X = 400;
-var MAX_VELOCITY_Y = 200;
-var ACCELERATION = 400;
-var DRAG = 400;
+var currentPlayer = require('./current-player');
 
-var Weapon = require('./weapon');
+var Enemy = function(game, x, y, key, opts) {
+  Phaser.Sprite.call(this, game, x, y, key);
 
-var Enemy = function(game, x, y, key, frame, bullets, player, audio) {
-  Phaser.Sprite.call(this, game, x, y, key, frame);
+  this.weaponOffsetX = 28;
 
-  this.maxHealth = 100;
+  this.frames = opts.frames;
+  this.weapon = opts.weapon;
+  this.ai = opts.ai;
+
+  this.velocity = opts.velocity;
+  this.acceleration = opts.acceleration;
+  this.maxVelocityX = opts.maxVelocityX;
+  this.maxVelocityY = opts.maxVelocityY;
+  this.drag = opts.drag;
 
   this.texture.baseTexture.scaleMode = PIXI.scaleModes.NEAREST;
-
-  this.minFireRate = 500;
-  this.maxFireRate = 1500;
-
   this.anchor.setTo(0.5, 0.5);
   this.game.physics.enable(this, Phaser.Physics.ARCADE);
+  this.body.maxVelocity.setTo(this.maxVelocityX, this.maxVelocityY);
+  this.body.drag.setTo(this.drag, this.drag);
   this.body.setSize(this.width * 0.8, this.height * 0.8);
-
-  this.body.maxVelocity.setTo(MAX_VELOCITY_X, MAX_VELOCITY_Y);
-  this.body.drag.setTo(DRAG, DRAG);
-
   this.scale.set(2, 2);
-  this.frameName = 'enemies/jet1/0001';
-
-  this.pointsValue = 100;
-  this.collideDamage = 25;
-
-  this.killDelay = 50;
-
-  this.player = player;
-  this.weapon = new Weapon(this.game, bullets, {minFireRate: 1000, maxFireRate: 2000, bulletSpeed: 150, bulletDamage: 10, audio: audio});
-
   this.exists = false;
+
+  this.maxHealth = opts.maxHealth;
+  this.pointsValue = opts.pointsValue;
+  this.collideDamage = opts.collideDamage;
+
+  if (opts.target === 'player') this.target = currentPlayer.position;
 };
 
 Enemy.prototype = Object.create(Phaser.Sprite.prototype);
 Enemy.prototype.constructor = Enemy;
 
-Enemy.prototype.spawn = function(x, direction) {
+Enemy.parse = function(enemiesData, aiData, weaponsData) {
+  var parsed = JSON.parse(enemiesData);
+  _.forEach(parsed, function(enemy) {
+    if (typeof enemy.ai === 'string') enemy.ai = aiData[enemy.ai];
+    if (typeof enemy.weapon === 'string') enemy.weapon = weaponsData[enemy.weapon];
+  });
+  return Object.freeze(parsed);
+};
+
+Enemy.prototype.spawn = function(x) {
   this.reset(x, -40, this.maxHealth);
 
-  this.body.velocity.y = 300;
-  this.body.acceleration.y = 100;
-  this.aiDirection = direction;
+  this.body.velocity.y = this.velocity;
+  this.body.acceleration.y = this.acceleration;
 
-  this.fireEvent = this.game.time.events.add(_.random(this.minFireRate, this.maxFireRate), this.fire, this);
-  this.ai = this.game.time.events.add(1000, this.turn, this);
+  var step = this.ai.steps[0];
+  this.aiEvent = this.game.time.events.add(step.delay, this.updateAI, this);
 };
 
 // TODO remove after upgrading to Phaser 2.3.1
@@ -60,19 +63,38 @@ Enemy.prototype.damage = function(damage) {
   }
 };
 
-Enemy.prototype.fire = function() {
+Enemy.prototype.updateAI = function() {
+  this[this.ai.currentStep().method]();
+  var next = this.ai.updateStep();
+  if (next) this.aiEvent = this.game.time.events.add(next.delay, this.updateAI, this);
+};
+
+Enemy.prototype.startFiring = function() {
   this.firing = true;
 };
 
-Enemy.prototype.turn = function() {
-  this.moveDirection = this.aiDirection;
+Enemy.prototype.stopFiring = function() {
+  this.firing = false;
+};
+
+Enemy.prototype.turnLeft = function() {
+  this.moveDirection = -1;
+};
+
+Enemy.prototype.turnRight = function() {
+  this.moveDirection = 1;
+};
+
+Enemy.prototype.stopTurning = function() {
+  this.moveDirection = 0;
 };
 
 Enemy.prototype.reset = function(x, y, health) {
   Phaser.Sprite.prototype.reset.call(this, x, y, health);
 
-  if (this.ai) this.game.time.events.remove(this.ai);
-  if (this.fireEvent) this.game.time.events.remove(this.fireEvent);
+  this.ai.reset();
+  this.firing = false;
+  if (this.aiEvent) this.game.time.events.remove(this.aiEvent);
   this.moveDirection = 0;
 };
 
@@ -86,17 +108,23 @@ Enemy.prototype.update = function() {
   }
 
   if (this.moveDirection) {
-    this.body.acceleration.x = ACCELERATION * this.moveDirection;
-  }
-  // don't fire if the player can't avoid it
-  if (this.firing && this.y < this.game.world.height - 200) this.weapon.fire(this, this.player);
-
-  if (this.body.velocity.x > MAX_VELOCITY_X * 0.25) {
-    this.frameName = 'enemies/jet1/0002';
-  } else if (this.body.velocity.x < -MAX_VELOCITY_X * 0.25) {
-    this.frameName = 'enemies/jet1/0000';
+    this.body.acceleration.x = this.acceleration * this.moveDirection;
   } else {
-    this.frameName = 'enemies/jet1/0001';
+    if (this.body.acceleration < 0) {
+      this.body.acceleration.x = Math.min(this.body.acceleration.x + this.acceleration, 0);
+    } else {
+      this.body.acceleration.x = Math.max(this.body.acceleration.x - this.acceleration, 0);
+    }
+  }
+  // don't fire past a certain point on the screen, that's annoying
+  if (this.firing && this.y < this.game.world.height - 200) this.weapon.fire(this, this.target, 90);
+
+  if (this.body.velocity.x > this.maxVelocityX * 0.25) {
+    this.frameName = this.frames.right;
+  } else if (this.body.velocity.x < -this.maxVelocityX * 0.25) {
+    this.frameName = this.frames.left;
+  } else {
+    this.frameName = this.frames.center;
   }
 };
 

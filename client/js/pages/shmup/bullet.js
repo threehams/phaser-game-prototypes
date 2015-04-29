@@ -23,6 +23,7 @@ Bullet.prototype.OWNERS = {
 
 Bullet.prototype.reset = function(x, y, health) {
   Phaser.Sprite.prototype.reset.call(this, x, y, health);
+  this.bringToTop();
 
   this.moveDirection = 0;
 };
@@ -34,7 +35,10 @@ Bullet.prototype.fire = function(x, y, angle, speed, damage) {
 };
 
 Bullet.prototype.update = function() {
-  if (this.y < 0 || this.x < -this.width || this.x > this.game.world.height + this.width) {
+  if (this.y < 0
+    || this.x < -this.width
+    || this.x > this.game.world.width + this.width
+    || this.y > this.game.world.height + this.height) {
     this.kill();
   }
 };
