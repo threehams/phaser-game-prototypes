@@ -78,7 +78,9 @@ Game.prototype = {
     this.game.add.existing(weapon);
     this.player.addWeapon(weapon);
 
+    this.totalEnemyGroupWeight = 0;
     this.enemyGroups = _.map(this.enemyGroupsData, function(group) {
+      that.totalEnemyGroupWeight += group.weight;
       return new EnemyGenerator(that.game, group, that.enemyBullets);
     });
 
@@ -93,7 +95,6 @@ Game.prototype = {
     this.game.add.image(260, 20, this.pointsText);
     this.updatePoints();
 
-    //console.log('game');
     this.explosions = new ExplosionGenerator(this.game, this.audio.explosions);
 
     this.game.sound.setDecodedCallback([this.music], this.playMusic, this);
@@ -105,7 +106,16 @@ Game.prototype = {
   },
 
   spawnGroup: function() {
-    _.sample(this.enemyGroups).spawn();
+    // anything more efficient would be overkill for such a small array
+    var weight = _.random(0, this.totalEnemyGroupWeight);
+    _.forEach(this.enemyGroups, function(group) {
+      if (weight < group.weight) {
+        group.spawn();
+        return false;
+      } else {
+        weight -= group.weight;
+      }
+    });
   },
 
   playMusic: function() {

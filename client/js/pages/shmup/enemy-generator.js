@@ -12,6 +12,7 @@ var EnemyGenerator = function(game, opts, bullets) {
   if (opts.position === 'center') this.spawnPosition = this.game.world.centerX;
   if (opts.positionOffset) this.spawnPosition += opts.positionOffset;
 
+  this.weight = opts.weight; // weighted chance of this generator being chosen
   this.randomOffset = opts.randomOffset || 0;
   this.spawnCount = opts.spawnCount;
   this.spawnDelay = opts.spawnDelay;
