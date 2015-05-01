@@ -8,6 +8,9 @@ function AudioComponent(game) {
   events.playSound.add(this.play, this);
   this.playlist = {};
   this.nextPlay = {};
+
+  // uncomment if sounds get annoying
+  //this.game.sound.mute = true;
 }
 
 AudioComponent.prototype.play = function(sound, volume, loop) {

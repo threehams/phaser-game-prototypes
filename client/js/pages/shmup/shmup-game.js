@@ -1,14 +1,17 @@
 'use strict';
 
-var Player = require('./player');
+var AI = require('./ai');
+var AudioComponent = require('./components/audio-component');
 var Bullet = require('./bullet');
+var Enemy = require('./enemy');
 var EnemyGenerator = require('./enemy-generator');
 var ExplosionGenerator = require('./explosion-generator');
+var PlayerController = require('./player-controller');
+var Player = require('./player');
+var UI = require('./ui');
 var Weapon = require('./weapon');
-var Enemy = require('./enemy');
-var AI = require('./ai');
+
 var currentPlayer = require('./current-player');
-var AudioComponent = require('./components/audio-component');
 var events = require('./events');
 
 function Game() {}
@@ -42,8 +45,10 @@ Game.prototype = {
 
     this.padding = 36;
 
+    // instantiate all services
     this.audioService = new AudioComponent(this.game);
 
+    // Move this into audio service? Could go either place
     this.game.add.audio('music');
     this.game.add.audio('firePulse');
     this.game.add.audio('fireSmall');
@@ -52,15 +57,12 @@ Game.prototype = {
     this.game.add.audio('explosionSmall');
     this.game.add.audio('explosionNormal');
 
-    //this.game.sound.mute = true;
-
     this.background = this.game.add.tileSprite(0, 0, 400, 600, 'background');
     this.background.texture.baseTexture.scaleMode = PIXI.scaleModes.NEAREST;
     this.background.autoScroll(0, 30);
     this.background.scale.set(2, 2);
 
-    this.cursors = this.game.input.keyboard.createCursorKeys();
-
+    // TODO maybe belongs in a class which controls this object pool? also, maybe merge these, but would make collision checking annoying
     this.playerBullets = new Phaser.Group(this.game, null);
     this.enemyBullets = new Phaser.Group(this.game, null);
 
@@ -71,6 +73,7 @@ Game.prototype = {
       that.enemyBullets.add(new Bullet(that.game, 0, 0, 'sprites', 'projectiles/enemy/0000'), true);
     });
 
+    // TODO Have the player get its weapon from JSON data
     this.player = new Player(this.game, 200, this.world.height - this.padding, 'sprites', null);
     this.game.add.existing(this.player);
     currentPlayer.position = this.player.position;
@@ -79,33 +82,30 @@ Game.prototype = {
     this.game.add.existing(weapon);
     this.player.addWeapon(weapon);
 
+    // TODO Director class to control overall enemy grouping?
     this.totalEnemyGroupWeight = 0;
     this.enemyGroups = _.map(this.enemyGroupsData, function(group) {
       that.totalEnemyGroupWeight += group.weight;
       return new EnemyGenerator(that.game, group, that.enemyBullets);
     });
 
-    this.fireButton = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-
-    this.shieldsText = this.game.add.retroFont('pressStart', 20, 20, (Phaser.RetroFont.TEXT_SET3));
-    this.game.add.image(20, 20, this.shieldsText);
-    this.updateShields(this.player.shields);
+    this.playerController = new PlayerController(this.game, this.player);
 
     this.points = 0;
-    this.pointsText = this.game.add.retroFont('pressStart', 20, 20, (Phaser.RetroFont.TEXT_SET3));
-    this.game.add.image(260, 20, this.pointsText);
-    this.updatePoints();
 
     this.explosions = new ExplosionGenerator(this.game);
-
     this.game.sound.setDecodedCallback([this.music], this.playMusic, this);
 
+    // These have to be added last so they appear on top of everything
     this.game.add.existing(this.playerBullets);
     this.game.add.existing(this.enemyBullets);
+
+    this.ui = new UI(this.game); // UI goes on top of everything
 
     this.game.time.events.loop(2000, this.spawnGroup, this);
   },
 
+  // TODO move to Director class?
   spawnGroup: function() {
     // anything more efficient would be overkill for such a small array
     var weight = _.random(0, this.totalEnemyGroupWeight);
@@ -127,8 +127,6 @@ Game.prototype = {
     if (this.won || this.lost) return;
     var that = this;
 
-    this.player.stop();
-
     // force player back in bounds
     if (this.player.x < this.padding) {
       this.player.x = this.padding;
@@ -140,22 +138,8 @@ Game.prototype = {
     } else if (this.player.y < this.padding) {
       this.player.y = this.padding;
     }
-    // move player if key pressed
-    if (this.cursors.left.isDown) {
-      this.player.moveLeft();
-    } else if (this.cursors.right.isDown) {
-      this.player.moveRight();
-    }
-    if (this.cursors.up.isDown) {
-      this.player.moveUp();
-    } else if (this.cursors.down.isDown) {
-      this.player.moveDown();
-    }
 
-    // fire player weapon if key pressed
-    if (this.fireButton.isDown) {
-      this.player.fireWeapon();
-    }
+    this.playerController.update();
 
     // cover overlap of player, enemies, bullets
     this.game.physics.arcade.overlap(this.player, this.enemyBullets, this.playerHit, null, this);
@@ -165,13 +149,12 @@ Game.prototype = {
       that.game.physics.arcade.overlap(that.playerBullets, group, that.enemyHit, null, that);
     });
     this.audioService.update();
+    this.ui.update({points: this.points, shields: this.player.shields});
   },
 
   enemyCollide: function(player, enemy) {
     enemy.kill();
-    //this.explosions.spawn(enemy);
     player.damageShields(enemy.collideDamage);
-    this.updateShields(player.shields);
 
     if (player.shieldsGone()) {
       this.showLose();
@@ -183,14 +166,8 @@ Game.prototype = {
     bullet.kill();
 
     if (!enemy.alive) {
-      //this.explosions.spawn(enemy);
       this.points += enemy.pointsValue;
-      this.updatePoints();
     }
-  },
-
-  spawnExplosion: function(source, number) {
-    this.explosions.spawn(enemy, number);
   },
 
   playerHit: function(player, bullet) {
@@ -199,18 +176,9 @@ Game.prototype = {
 
     player.damageShields(bullet.damageDealt);
 
-    this.updateShields(player.shields);
     if (player.shieldsGone()) {
       this.showLose();
     }
-  },
-
-  updatePoints: function() {
-    this.pointsText.text = _.padLeft(this.points, 6, '0');
-  },
-
-  updateShields: function(shields) {
-    this.shieldsText.text = _.padLeft(shields, 3, '0');
   },
 
   showLose: function() {
@@ -237,7 +205,7 @@ Game.prototype = {
         this.game.add.image(100, 300, font);
 
         this.game.paused = true;
-      }, this)
+      }, this);
     }, this);
   },
 
