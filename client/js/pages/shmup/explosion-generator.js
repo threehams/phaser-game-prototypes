@@ -53,7 +53,7 @@ ExplosionGenerator.prototype.spawn = function(opts) {
   }
 
   if (opts.burst) {
-    spread = 5;
+    spread = 3;
     _.times(totalCount, explode.bind(this));
   } else {
     explode.bind(this)();

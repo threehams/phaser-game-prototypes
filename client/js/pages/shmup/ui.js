@@ -22,4 +22,15 @@ UI.prototype.update = function(currentValues) {
   this.clean = currentValues;
 };
 
+UI.prototype.showLose = function() {
+  var graphics = this.game.add.graphics(80, 280);
+  graphics.beginFill('#000000');
+  graphics.drawRect(0, 0, 240, 60);
+  graphics.endFill();
+
+  var font = this.game.add.retroFont('pressStart', 20, 20, (Phaser.RetroFont.TEXT_SET3));
+  font.text = 'YOUR LOSER';
+  this.game.add.image(100, 300, font);
+};
+
 module.exports = UI;

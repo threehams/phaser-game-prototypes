@@ -3,6 +3,7 @@
 var MAX_VELOCITY = 350;
 var ACCELERATION = 4000;
 var DRAG = 3000;
+var events = require('./events');
 
 var Player = function(game, x, y, key, frame) {
   Phaser.Sprite.call(this, game, x, y, key, frame);
@@ -58,6 +59,7 @@ Player.prototype.damageShields = function(damage) {
   this.shields --;
   if (this.shields <= 0) {
     this.shields = 0;
+    this.explode();
   }
   this.invincibleUntil = this.game.time.time + 3000;
 };
@@ -75,6 +77,20 @@ Player.prototype.fireWeapon = function() {
   var that = this;
   _.forEach(this.weapons, function(weapon) {
     weapon.fire(that);
+  });
+};
+
+Player.prototype.explode = function() {
+  var that = this;
+  this.game.time.events.repeat(250, 10, function() {
+    events.spawnExplosions.dispatch({x: that.x, y: that.y, width: that.width, height: that.height});
+  }, this);
+  this.game.time.events.add(2500, function() {
+    events.spawnExplosions.dispatch({x: that.x, y: that.y, width: that.width, height: that.height, burst: true});
+    that.kill();
+  });
+  this.game.time.events.add(4000, function() {
+    events.playerDead.dispatch();
   });
 };
 

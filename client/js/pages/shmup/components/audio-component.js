@@ -24,7 +24,7 @@ AudioComponent.prototype.update = function() {
   _.forEach(this.playlist, function(opts, sound) {
     if (that.nextPlay[sound] && that.game.time.time < that.nextPlay[sound]) return;
     that.game.sound.play(sound, opts[0], opts[1]);
-    that.nextPlay[sound] = that.game.time.time + 100;
+    that.nextPlay[sound] = that.game.time.time + 60;
   });
   this.playlist = {};
 };

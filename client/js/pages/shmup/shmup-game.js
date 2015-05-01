@@ -43,9 +43,9 @@ Game.prototype = {
     this.enemiesData = Enemy.parse(this.cache.getText('enemiesData'), this.aiData, this.weaponsData);
     this.enemyGroupsData = EnemyGenerator.parse(this.cache.getText('enemyGroupsData'), this.enemiesData);
 
-    this.padding = 36;
+    this.padding = 36; // boundaries for the player in the world
 
-    // instantiate all services
+    // Audio service prevents sounds from triggering too often
     this.audioService = new AudioComponent(this.game);
 
     // Move this into audio service? Could go either place
@@ -103,6 +103,7 @@ Game.prototype = {
     this.ui = new UI(this.game); // UI goes on top of everything
 
     this.game.time.events.loop(2000, this.spawnGroup, this);
+    events.playerDead.add(this.showLose, this);
   },
 
   // TODO move to Director class?
@@ -153,12 +154,9 @@ Game.prototype = {
   },
 
   enemyCollide: function(player, enemy) {
+    enemy.damage(enemy.maxHealth);
     enemy.kill();
     player.damageShields(enemy.collideDamage);
-
-    if (player.shieldsGone()) {
-      this.showLose();
-    }
   },
 
   enemyHit: function(bullet, enemy) {
@@ -175,47 +173,25 @@ Game.prototype = {
     if (player.shieldsGone()) return;
 
     player.damageShields(bullet.damageDealt);
-
-    if (player.shieldsGone()) {
-      this.showLose();
-    }
   },
 
   showLose: function() {
-    this.game.time.events.repeat(250, 10, function() {
-      this.explosions.spawn(this.player);
-    }, this);
+    var that = this;
 
-    this.game.time.events.add(2500, function() {
-      this.lost = true;
-      this.explosions.spawn(this.player, {burst: true});
-      this.player.kill();
+    this.lost = true;
+    this.game.paused = true;
 
-      this.game.time.events.add(1500, function() {
-
-        this.game.paused = true;
-
-        var graphics = this.game.add.graphics(80, 280);
-        graphics.beginFill('#000000');
-        graphics.drawRect(0, 0, 240, 60);
-        graphics.endFill();
-
-        var font = this.game.add.retroFont('pressStart', 20, 20, (Phaser.RetroFont.TEXT_SET3));
-        font.text = 'YOUR LOSER';
-        this.game.add.image(100, 300, font);
-
-        this.game.paused = true;
-      }, this);
-    }, this);
-  },
-
-  showWin: function() {
-    this.won = true;
-
-    var font = this.game.add.retroFont('pressStart', 20, 20, (Phaser.RetroFont.TEXT_SET3));
-    font.text = 'YOU\'RE WIN';
-    this.game.add.image(100, 300, font);
+    that.ui.showLose();
   }
+
+  // TODO implement winning
+  //showWin: function() {
+  //  this.won = true;
+  //
+  //  var font = this.game.add.retroFont('pressStart', 20, 20, (Phaser.RetroFont.TEXT_SET3));
+  //  font.text = 'YOU\'RE WIN';
+  //  this.game.add.image(100, 300, font);
+  //}
 };
 
 module.exports = Game;
