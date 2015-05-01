@@ -1,11 +1,9 @@
 'use strict';
 
-var AudioComponent = require('./components/audio-component');
+var events = require('./events');
 
 var Weapon = function(game, bullets, weaponOpts) {
   Phaser.Group.call(this, game);
-
-  this.audioComponent = new AudioComponent(game);
 
   // Make weapons an array if it isn't already one
   weaponOpts = [].concat(weaponOpts);
@@ -121,7 +119,7 @@ Weapon.prototype.firePart = function(part, source, target, angle) {
     );
   });
 
-  if (part.audio) this.audioComponent.play(part.audio);
+  if (part.audio) events.playSound.dispatch(part.audio);
 
   var fireRate;
   if (part.burstCount) {

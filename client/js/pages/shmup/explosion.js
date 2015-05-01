@@ -1,5 +1,7 @@
 'use strict';
 
+var events = require('./events');
+
 var Explosion = function(game, x, y, key, frame) {
   Phaser.Sprite.call(this, game, x, y, key, frame);
 
@@ -27,8 +29,8 @@ Explosion.prototype.spawn = function(x, y, vector, size) {
   this.xSpeed = vector[0];
   this.ySpeed = vector[1];
 
-  this.play(size, null, false, true);
-  this.audio[size].play();
+  this.play(size, null, false, true); // play animation and kill sprite when done
+  events.playSound.dispatch(_.camelCase('explosion ' + size));
 };
 
 Explosion.prototype.update = function() {

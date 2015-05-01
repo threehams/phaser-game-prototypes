@@ -8,6 +8,8 @@ var Weapon = require('./weapon');
 var Enemy = require('./enemy');
 var AI = require('./ai');
 var currentPlayer = require('./current-player');
+var AudioComponent = require('./components/audio-component');
+var events = require('./events');
 
 function Game() {}
 
@@ -19,8 +21,8 @@ Game.prototype = {
     this.game.load.audio('music', 'assets/tyrian-the-level.mp3');
     this.game.load.audio('explosionTiny', 'assets/explosion-tiny.mp3');
     this.game.load.audio('explosionSmall', 'assets/explosion-small.mp3');
-    this.game.load.audio('explosionNormal', 'assets/explosion-normal.mp3');
-    this.game.load.audio('explosionLarge', 'assets/explosion-large.mp3');
+    this.game.load.audio('explosionMediumish', 'assets/explosion-normal.mp3');
+    this.game.load.audio('explosionNormal', 'assets/explosion-large.mp3');
     this.game.load.audio('firePulse', 'assets/fire-pulse.mp3');
     this.game.load.audio('fireSmall', 'assets/fire-small.mp3');
     this.game.load.audio('fireVulcan', 'assets/fire-vulcan.mp3');
@@ -40,16 +42,15 @@ Game.prototype = {
 
     this.padding = 36;
 
-    this.music = this.game.add.audio('music');
+    this.audioService = new AudioComponent(this.game);
+
+    this.game.add.audio('music');
     this.game.add.audio('firePulse');
     this.game.add.audio('fireSmall');
-    this.audio = {
-      explosions: {
-        tiny: this.game.add.audio('explosionTiny'),
-        small: this.game.add.audio('explosionSmall'),
-        normal: this.game.add.audio('explosionLarge')
-      }
-    };
+    this.game.add.audio('fireVulcan');
+    this.game.add.audio('explosionTiny');
+    this.game.add.audio('explosionSmall');
+    this.game.add.audio('explosionNormal');
 
     //this.game.sound.mute = true;
 
@@ -95,7 +96,7 @@ Game.prototype = {
     this.game.add.image(260, 20, this.pointsText);
     this.updatePoints();
 
-    this.explosions = new ExplosionGenerator(this.game, this.audio.explosions);
+    this.explosions = new ExplosionGenerator(this.game);
 
     this.game.sound.setDecodedCallback([this.music], this.playMusic, this);
 
@@ -119,7 +120,7 @@ Game.prototype = {
   },
 
   playMusic: function() {
-    this.music.play(null, null, 0.5);
+    events.playSound.dispatch('music', 0.5);
   },
 
   update: function() {
@@ -162,7 +163,8 @@ Game.prototype = {
     _.forEach(this.enemyGroups, function(group) {
       that.game.physics.arcade.overlap(that.player, group, that.enemyCollide, null, that);
       that.game.physics.arcade.overlap(that.playerBullets, group, that.enemyHit, null, that);
-    })
+    });
+    this.audioService.update();
   },
 
   enemyCollide: function(player, enemy) {

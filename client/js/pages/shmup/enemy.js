@@ -65,7 +65,7 @@ Enemy.prototype.damage = function(damage) {
   this.health -= damage;
   if (this.health <= 0) {
     this.kill();
-    events.onExplosion.dispatch({x: this.position.x, y: this.position.y, width: this.width, height: this.height});
+    events.spawnExplosions.dispatch({x: this.position.x, y: this.position.y, width: this.width, height: this.height});
   }
 };
 
