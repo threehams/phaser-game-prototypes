@@ -1,0 +1,73 @@
+{
+  "pulseForward": {
+    "bulletCount": 1,
+    "fireRate": 150,
+    "bulletSpeed": 600,
+    "bulletDamage": 15,
+    "frameName": "projectiles/pulse4",
+    "audio": "firePulse"
+  },
+  "pulseSpread": {
+    "bulletCount": 4,
+    "spreadOffset": 5,
+    "spreadAngle": 8,
+    "fireRate": 150,
+    "bulletSpeed": 600,
+    "bulletDamage": 15,
+    "frameName": "projectiles/pulse1",
+    "audio": "firePulse"
+  },
+  "vulcanSingle": {
+    "bulletCount": 1,
+    "fireRate": 75,
+    "bulletSpeed": 900,
+    "bulletDamage": 15,
+    "audio": "fireVulcan",
+    "frameName": "projectiles/vulcan-single",
+    "offsetPattern": [0, 4, 8, 12, 8, 4, 0, -4, -8, -12, -8, -4]
+  },
+  "vulcanDouble": {
+    "bulletCount": 1,
+    "fireRate": 50,
+    "bulletSpeed": 1200,
+    "bulletDamage": 25,
+    "audio": "fireVulcan",
+    "frameName": "projectiles/vulcan-double",
+    "offsetPattern": [0, 4, 8, 12, 8, 4, 0, -4, -8, -12, -8, -4]
+  },
+  "vulcanSpread": {
+    "bulletCount": 2,
+    "fireRate": 50,
+    "bulletSpeed": 1200,
+    "bulletDamage": 15,
+    "spreadAngle": 10,
+    "audio": "fireVulcan",
+    "frameName": "projectiles/vulcan-single",
+    "offsetPattern": [0, 4, 8, 12, 8, 4, 0, -4, -8, -12, -8, -4]
+  },
+  "largeEnemyForward": {
+    "bulletCount": 2,
+    "fireRate": 3000,
+    "burstRate": 75,
+    "burstCount": 10,
+    "bulletSpeed": 600,
+    "bulletDamage": 15,
+    "frameName": "projectiles/pulse1",
+    "audio": "firePulse"
+  },
+  "largeEnemySpread": {
+    "bulletCount": 4,
+    "spreadOffset": 5,
+    "spreadAngle": 10,
+    "fireRate": 3000,
+    "burstRate": 75,
+    "burstCount": 10,
+    "bulletSpeed": 600,
+    "bulletDamage": 15,
+    "frameName": "projectiles/pulse1",
+    "audio": "firePulse"
+  },
+  "multi": ["pulseForward", "pulseSpread"],
+  "vulcanMulti": ["vulcanDouble", "vulcanSpread"],
+  "largeEnemyWeapon": ["largeEnemyForward", "largeEnemySpread"]
+}

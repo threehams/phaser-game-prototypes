@@ -8,6 +8,8 @@
     "expect",
     "it",
     "beforeEach",
-    "inject"
+    "inject",
+    "PIXI",
+    "Phaser"
   ]
 }

@@ -1,0 +1,34 @@
+{
+  "popcorn": {
+    "weight": 250,
+    "position": "center",
+    "randomOffset": 100,
+    "spawnCount": 2,
+    "spawnDelay": 800,
+    "enemy": "jet2"
+  },
+  "forward": {
+    "weight": 250,
+    "position": "center",
+    "positionOffset": -150,
+    "spawnCount": 5,
+    "spawnDelay": 100,
+    "spawnOffset": 50,
+    "enemy": "jet3"
+  },
+  "sine": {
+    "weight": 250,
+    "position": "center",
+    "spawnCount": 4,
+    "spawnDelay": 200,
+    "enemy": "jet1"
+  },
+  "large": {
+    "weight": 50,
+    "position": "center",
+    "spawnCount": 1,
+    "spawnDelay": 0,
+    "enemy": "large",
+    "randomOffset": 100
+  }
+}

@@ -97,7 +97,7 @@ gulp.task('watch', function () {
   });
 
   gulp.watch('client/**/*.scss', ['sass']);
-  gulp.watch(['client/**/*.html', 'client/**/*.css', 'client/**/*.svg', 'client/**/*.jpg', 'client/vid/*.*'], ['copy-static-files']);
+  gulp.watch(['client/**/*.html', 'client/**/*.css', 'client/**/*.svg', 'client/**/*.jpg', 'client/vid/*.*', 'client/**/*.json', 'client/**/*.mp3'], ['copy-static-files']);
   gulp.watch('client/**/*.png', ['process-png']);
   gulp.watch('server/**/*.js', ['mocha']);
 
@@ -126,11 +126,16 @@ gulp.task('watch', function () {
   }
 });
 gulp.task('process-static-files', function () {
-  runSequence(['copy-static-files', 'process-png']);
+  runSequence(['copy-static-files', 'process-png', 'copy-modules']);
+});
+
+gulp.task('copy-modules', function() {
+  return gulp.src(['./node_modules/phaser/dist/phaser.min.js', './node_modules/phaser/dist/phaser.map'])
+    .pipe(gulp.dest('dist/vendor/'));
 });
 
 gulp.task('copy-static-files', function() {
-  return gulp.src(['./client/**/*.html', './client/**/*.css', 'client/**/*.svg', 'client/**/*.jpg', 'client/**/*.mp4'])
+  return gulp.src(['client/**/*.html', 'client/**/*.css', 'client/**/*.svg', 'client/**/*.jpg', 'client/**/*.mp4', 'client/**/*.json', 'client/**/*.mp3'])
     .pipe(gulp.dest('dist/'))
     .pipe(reload({stream: true}));
 });
