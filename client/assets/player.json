@@ -1,0 +1,12 @@
+{
+  "frames": {
+    "left": "playerships/phoenix/0000",
+    "center": "playerships/phoenix/0002",
+    "right": "playerships/phoenix/0004"
+  },
+  "maxVelocity": 350,
+  "maxHealth": 3,
+  "invincibilityDelay": 3000,
+  "weaponOffsetX": -32,
+  "weapon": "vulcanMulti"
+}

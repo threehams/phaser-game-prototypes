@@ -33,6 +33,7 @@ Game.prototype = {
     this.game.load.text('enemiesData', 'assets/enemies.json');
     this.game.load.text('aiData', 'assets/ai.json');
     this.game.load.text('enemyGroupsData', 'assets/enemy-groups.json');
+    this.game.load.text('playerData', 'assets/player.json');
   },
 
   create: function () {
@@ -42,6 +43,7 @@ Game.prototype = {
     this.aiData = AI.parse(this.cache.getText('aiData'));
     this.enemiesData = Enemy.parse(this.cache.getText('enemiesData'), this.aiData, this.weaponsData);
     this.enemyGroupsData = EnemyGenerator.parse(this.cache.getText('enemyGroupsData'), this.enemiesData);
+    this.playerData = Player.parse(this.cache.getText('playerData'), this.weaponsData);
 
     this.padding = 36; // boundaries for the player in the world
 
@@ -73,14 +75,10 @@ Game.prototype = {
       that.enemyBullets.add(new Bullet(that.game, 0, 0, 'sprites', 'projectiles/enemy/0000'), true);
     });
 
-    // TODO Have the player get its weapon from JSON data
-    this.player = new Player(this.game, 200, this.world.height - this.padding, 'sprites', null);
+    var weapon = new Weapon(this.game, this.playerBullets, this.playerData.weapon);
+    this.player = new Player(this.game, 200, this.world.height - this.padding, 'sprites', _.merge({weapon: weapon}, _.omit(this.playerData, 'weapon')));
     this.game.add.existing(this.player);
     currentPlayer.position = this.player.position;
-
-    var weapon = new Weapon(this.game, this.playerBullets, this.weaponsData.multi);
-    this.game.add.existing(weapon);
-    this.player.addWeapon(weapon);
 
     // TODO Director class to control overall enemy grouping?
     this.totalEnemyGroupWeight = 0;
@@ -100,7 +98,7 @@ Game.prototype = {
     this.game.add.existing(this.playerBullets);
     this.game.add.existing(this.enemyBullets);
 
-    this.ui = new UI(this.game); // UI goes on top of everything
+    this.ui = new UI(this.game); // UI goes on top of everything.
 
     this.game.time.events.loop(2000, this.spawnGroup, this);
     events.playerDead.add(this.showLose, this);
@@ -121,7 +119,7 @@ Game.prototype = {
   },
 
   playMusic: function() {
-    events.playSound.dispatch('music', 0.5);
+    events.playSound.dispatch('music');
   },
 
   update: function() {
