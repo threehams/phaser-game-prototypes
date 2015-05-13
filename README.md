@@ -1,94 +1,62 @@
-# karmangulpify-template
-Template for a full-stack Javascript project, with automatic reload, browser sync, and test watching for both frontend
-and backend.
+# phaser-game-prototypes
 
-# Getting Started
-Clone this repo:
+Series of game prototypes made to learn the Phaser game engine.
 
-    git clone git@github.com:threehams/karmangulpify
+Note that there are little to no tests for these projects (unlike all the others) - Phaser isn't
+designed for testing, so it'll take some time to figure out how to handle a project so reliant on another
+framework.
 
-Install all dependencies
+## Memory
+Simple memory game using assets from the Death Whimsy project. It's mostly just an array.
+ Move along, nothing to see here.
+ 
+## Minesweeper
+Slightly more complex because of the more defined rules in (Microsoft's version of) Minesweeper.
+Filling in the area requires a flood-fill algorithm - done recursively because of the known max size of the playing field.
 
-    npm install
+## Tetris
+More interesting. Involved learning Phaser's game timers, and translating between the board's data structure and
+the Canvas coordinates, where the Y coordinate starts upper-left instead of lower-left.
 
-**node.js**: Run gulp through NPM. This ensures the --harmony-generators flag is set.
+There's probably some improvement possible there.
 
-    npm run gulp
+There's a but where the piece overlaps the top when it first enters the game.
+Fixing this involved learning how Phaser handles z-depth when sprites and groups interact.
+I decided to move and and learn that for the next game, then apply it to this one later.
 
-**io.js**: Generators are enabled by default, so you can probably just run gulp (untested).
+## Shmup
+A shooter which involved dealing with object pools, physics, collision detection, z-indexes,
+more graphics, and sound. Unlike the other three, this one is mostly driven by JSON data, including
+sprites, enemy generation, AI, weapons (including bullet patterns), and player ship stats. Sprite sheets are put
+together with Texture Packer. It's possible to change all of this without modifying any code.
 
-    ./node_modules/.bin/gulp
+This was the first project where I hit game-specific design issues. Games often have classes
+which need access to lots and lots of other classes. Grown organically, this turns into a giant mess!
 
-You'll see some passing tests and some intentionally failing tests, as well as "Access URLs."
-Open any number of web browsers at one of these URLs, and watch them all magically track sync scrolling and
-interactions!
+Some concepts used here:
 
-# Client/Server Docs
-Explore the repo to see README.md files in each folder (and subfolders).
+- Duplication in data is reduced by allowing strings for weapons and AI types in enemies.json and player.json.
+  When parsed, these strings are expanded into the corresponding objects.
+- There is a very common need for object pools, since object creation is expensive in Javascript (and garbage collection
+  WILL cause skipped frames!). All objects in the game are created once and reused.
+- Collision detection in Phaser is expected to be done at the level of the main game state. Because of this, the
+  state keeps a list of all bullets and enemies, and delegates handling to the objects. Bullet and enemy object pools
+  are injected into other classes as needed.
+- Audio is played through Phaser's event system (signals). Event types are kept in a single file for now,
+  since there are only a handful of them. Browserify's 'require' statement effectively makes this a singleton (but
+  thankfully not a global!). At some point, injecting it might be cleaner, but it's very small right now...
+  
+  Events are sent to the audio component for processing, to prevent sounds from repeating too often.
+  Note: should probably rename "component" to "anything other than component". Overloaded term. Naming is hard.
+- Enemies need access to the player's position for weapon targeting, but don't need to know anything else about the
+  player. The current-player module handles this. Same question about events.js applies here.
+- Player control is done through a separate class, PlayerController. This is nearly identical to Unreal Engine 4. It
+  takes control logic out of the already-heavy Game class and allows it to be overridden by AI if needed.
+- UI gets its own class to allow some extremely primitive one-way binding (dirty checking). Anything
+  else would be overkill right now.
+- The weapon class could really use refactoring. This would be the best case for unit tests, since the
+  fire() logic isn't tightly coupled to Phaser itself - it's mostly just a lot of conditionals and math.
 
-# jshint
-There are multiple .jshintrc files, which help keep consistent code and warn about mistakes.
-Client and server can have different rules, which is why there's more than one. Tests tend to have their own globals.
-[Read more](http://jshint.com/)
+This was a lot more fun than the others. At some point, I might turn it into something bigger.
 
-# Tests
-Testing is no fun, so I make a computer do it for me.
-
-This is a broad topic. Links coming eventually...
-
-## Client
-Frontend tests are run through the Karma test runner, with the Mocha framework and Chai assertion library.
-
-## Server
-Backend tests use Mocha, Chai/expect, and Dirty Chai.
-This last one just makes jshint-friendly statements - you can use it, or pretend it doesn't exist.
-
-# Scaling
-This template works well for small projects, and is probably fine for something medium-sized. Over time, you may notice
-some problems, however.
-
-## Gulp
-Having all tasks in one file is very, very nice when starting out. Eventually, the file will grow to the point where
-it's difficult to work with.
-
-I would not recommend splitting the gulpfile until it becomes painful. In the early stages, it can be hard to know
-how the tasks should be grouped.
-
-The [gulp-starter](https://github.com/greypants/gulp-starter) project shows a typical structure.
-
-## Backend
-The backend is set up to use Koa and the Bluebird promise library. Any promise library should work, but you need
-some kind of future to work with koa/co.
-
-This template has no real attachment to the backend. If you want to use a different server, just wipe out everything in
-the server folder and drop in something else, with an index.js to start the server. You'll probably need to rework the
-'mocha' Gulp task if you do this.
-
-### Server
-The Koa server is fantastic to work with for a small system, but it's not in as wide use as Express or Hapi, so
-middleware and support may not be as easy to find.
-
-### Structure
-The backend is organized into routes, controllers and models. You may want to play with a component
-structure, like the frontend.
-
-These components can eventually be split out into microservices, if you go that route. Don't do that until you run
-into problems - it increases complexity very quickly.
-
-## Frontend
-This template, gulp setup, and tests are fairly tightly coupled to Angular 1, with gradual transition to Angular 2 as
-migration details become available. If you are interested in a different front-end framework, you may want to use a
-different template.
-
-### Forms
-If you use a lot of forms, consider learning [Formly](https://github.com/formly-js/angular-formly).
-It can cut down on a lot of the directive work needed to get a lot of forms done, without duplicating a ton
-of template logic.
-
-### Components
-Gradually, the Components directory will get larger and larger. If a component is truly self-contained, it
-should be possible to move it to an NPM package, and include it through Browserify.
-
-This has the added benefit of speeding up reloads once JS grows to a certain size (it will be included in vendor.js),
-but maintaining multiple repositories can cause extra headaches during deployment. If you use a component across three
-or more projects, that's probably a good time to package it into an external dependency.
+All assets are from the old mid-90's PC shooter, Tyrian, which was made public in the mid-2000s.
