@@ -36,7 +36,7 @@ var Weapon = function(game, bullets, weaponOpts) {
       spreadAngle: opts.spreadAngle || 0,
 
       frameName: opts.frameName
-    }
+    };
   });
 };
 
